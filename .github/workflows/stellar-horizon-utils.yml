@@ -18,18 +18,14 @@ permissions: {}
 
 jobs:
   build:
+    # One build serves every distro: the package is a shell script, and focal's dpkg reads the
+    # zstd-compressed .deb this runner builds
     runs-on: ubuntu-latest
-    # The distro the Jenkins job's pbuilder chroot used. The same .deb goes to every distro.
-    container: ubuntu:20.04
     permissions:
       contents: read
-    defaults:
-      run:
-        shell: bash # the container's default is sh
     env:
       DEBFULLNAME: Package Maintainer
       DEBEMAIL: packages@stellar.org
-      DEBIAN_FRONTEND: noninteractive
       VERSION: ${{ inputs.version }}
       REVISION_OFFSET: 6
     steps:
@@ -40,10 +36,10 @@ jobs:
       - name: Install the build dependencies
         run: |
           set -euo pipefail
-          apt-get update -qq
-          apt-get install -y -qq --no-install-recommends devscripts
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends devscripts
           # The package's Build-Depends from debian/control, as pbuilder installed them
-          apt-get build-dep -y -qq ./stellar-horizon-utils
+          sudo apt-get build-dep -y -qq ./stellar-horizon-utils
 
       - name: Set the version
         run: |
